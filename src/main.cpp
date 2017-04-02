@@ -53,7 +53,8 @@ int main(int argc, char** argv )
         cv::namedWindow (NOME_JANELA, cv::WINDOW_AUTOSIZE);
         cv::setMouseCallback (NOME_JANELA, VideoClickHandler, &vid);
 
-        for (bool naoAcabou = vid.NextFrame (); cv::waitKey (1) >= 0 && naoAcabou; naoAcabou = vid.NextFrame ()) {
+        char key;
+        for (bool naoAcabou = vid.NextFrame (); (key = (char)cv::waitKey (1)) < 0 && naoAcabou; naoAcabou = vid.NextFrame ()) {
             if (vid.selected) {
                 vid.PaintPixels ();
             }

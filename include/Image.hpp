@@ -19,7 +19,7 @@ class Image {
     Image ();
     cv::Mat image;
     cv::Mat paintedImage;
-    uchar marginColor[2][3] = {0};
+    int marginColor[2][3] = {0};
     bool isGrayscale;
 };
 

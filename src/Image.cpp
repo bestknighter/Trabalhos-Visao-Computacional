@@ -39,10 +39,11 @@ void Image::PaintPixels () {
                  && marginColor[0][1] <= pixel[1] && pixel[1] <= marginColor[1][1]
                  && marginColor[0][2] <= pixel[2] && pixel[2] <= marginColor[1][2]
                 ) {
-                   paintedImage.at<cv::Vec3b> (i, j) = colorToPaint;
+                   paintedImage.at<cv::Vec3b> (i, j) = {colorToPaint[0], colorToPaint[1], colorToPaint[2]};
                 }
             }
         }
+    }
 }
 
 void Image::Show (const cv::String & winname, bool showPainted) {
@@ -63,8 +64,8 @@ void Image::Clicked (int x, int y) {
     selected = true;
     cv::Vec3b color = image.at<cv::Vec3b> (y, x);
     for (int i = 0; i<3; ++i) {
-        marginColor[0][i] = color[i]*(1-margin);
-        marginColor[1][i] = color[i]*(1+margin);
+        marginColor[0][i] = int(color[i])*(1-margin);
+        marginColor[1][i] = int(color[i])*(1+margin);
     }
     if (IsGrayscale ()) {
         printf ("Light (%d)\n", color[0]);
