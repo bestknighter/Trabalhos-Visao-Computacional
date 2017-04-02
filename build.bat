@@ -21,6 +21,7 @@ goto End
 
 :build_release
 set startPath=%cd%
+mkdir build
 cd ./build
 mkdir release
 cd ./release
@@ -35,6 +36,7 @@ goto :EOF
 
 :build_debug
 set startPath=%cd%
+mkdir build
 cd ./build
 mkdir debug
 cd ./debug
