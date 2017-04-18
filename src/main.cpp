@@ -1,31 +1,44 @@
-#include <stdio.h>
+#include <cstdio>
+#include <string>
 
 #include "opencv2/opencv.hpp"
 
 #include "CMakeVars.hpp"
+#include "Video.hpp"
+
+#define NOME_JANELA "Display Image"
 
 using namespace cv;
 
-int main(int argc, char** argv )
-{
-    if ( argc != 2 )
-    {
-        printf("usage: cv_test <Image_Path>\n");
+void VideoClickHandler (int event, int x, int y, int flags, void* userdata);
+
+int main (int argc, char** argv) {
+    if (argc != 2) {
+        printf("usage: Projeto_2 <webcam_index>\n");
         return -1;
     }
 
-    Mat image;
-    image = imread( argv[1], 1 );
+    // Video vid {std::stoi (argv[1])};
+    Video vid {argv[1]};
 
-    if ( !image.data )
-    {
-        printf("No image data \n");
+    if (!vid.IsValid ()) {
+        printf("Invalid stream\n");
         return -1;
     }
-    namedWindow("Display Image", WINDOW_AUTOSIZE );
-    imshow("Display Image", image);
 
-    waitKey(0);
+    namedWindow (NOME_JANELA, WINDOW_AUTOSIZE);
+    cv::setMouseCallback (NOME_JANELA, VideoClickHandler, &vid);
+    
+    while (vid.NextFrame () && 255 == waitKey (1)) {
+        vid.Show (NOME_JANELA);
+    }
 
     return 0;
+}
+
+void VideoClickHandler (int event, int x, int y, int flags, void* userdata) {
+    if (cv::EVENT_LBUTTONDOWN == event) {
+        Video* vid = (Video*)userdata;
+        vid->Clicked (x, y);
+    }
 }

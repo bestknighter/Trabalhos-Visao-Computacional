@@ -43,7 +43,7 @@ include_directories ("./include" ${OpenCV_INCLUDE_DIRS})
 file (GLOB SOURCES "src/*.cpp")
 
 # Adding all necessary flags
-list (APPEND CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++11 ${CMAKE_CXX_FLAGS}")
+list (APPEND CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++11 -fdiagnostics-color ${CMAKE_CXX_FLAGS}")
 
 # Creating executable and linker settings
 add_executable (${PROJECT_NAME} ${SOURCES})
