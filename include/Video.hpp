@@ -16,6 +16,7 @@ class Video : public Image {
     Video (int camIndex);
     bool IsValid ();
     bool NextFrame ();
+    void DrawOnImage ();
     void Clicked (int x, int y);
     cv::Point mouse;
   private:
