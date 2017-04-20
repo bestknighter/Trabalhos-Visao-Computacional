@@ -37,8 +37,9 @@ int main (int argc, char** argv) {
 }
 
 void VideoClickHandler (int event, int x, int y, int flags, void* userdata) {
+    Video* vid = (Video*)userdata;
     if (cv::EVENT_LBUTTONDOWN == event) {
-        Video* vid = (Video*)userdata;
         vid->Clicked (x, y);
     }
+    vid->mouse = {x,y};
 }

@@ -11,7 +11,7 @@ class Image {
     void Show (const cv::String & winname);
     bool IsGrayscale ();
     virtual bool IsValid ();
-    void Clicked (int x, int y);
+    virtual void Clicked (int x, int y);
   protected:
     Image ();
     cv::Mat image;
