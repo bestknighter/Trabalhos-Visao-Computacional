@@ -20,7 +20,8 @@ using namespace cv;
 
 void Instrucoes ();
 void VideoClickHandler (int event, int x, int y, int flags, void* userdata);
-void Calibrar (Video& vid);
+void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps);
+void Medias (const std::vector<Mat>& intrinsics, const std::vector<Mat>& distortionsVec, Mat& mediaIntr, Mat& mediaDist);
 
 int tecla = -1;
 
@@ -40,9 +41,35 @@ int main (int argc, char** argv) {
         return -1;
     }
 
+    int n_snaps, n_calibs;
+    printf ("Quantas calibracaoes fazer? ");
+    scanf ("%d", &n_calibs);
+    printf ("Quantos snapshots capturar? ");
+    scanf ("%d", &n_snaps);
+
+    std::vector<Mat> intrinsicos {n_calibs};
+    std::vector<Mat> distortions {n_calibs};
+
+    FileStorage fsIntrin;
+    FileStorage fsDistor;
+
     namedWindow (JANELA_RAW, WINDOW_AUTOSIZE);
     setMouseCallback (JANELA_RAW, VideoClickHandler, &vid);
-    Calibrar (vid);
+    
+    for (int i = 0; i < n_calibs; i++) {
+        String nomeIntr = "intrinsic";
+        String nomeDist = "distortions";
+        String ext = ".yml";
+        
+        Calibrar (vid, intrinsicos[i], distortions[i], n_snaps);
+        
+        fsIntrin = {nomeIntr + (i+1) + ext, FileStorage::WRITE};
+        fsDistor = {nomeDist + (i+1) + ext, FileStorage::WRITE};
+
+        fsIntrin << intrinsicos[i];
+        fsDistor << distortions[i];
+    }
+
 
     // Exibe imagem, linha e distancia
     {
@@ -72,16 +99,12 @@ void VideoClickHandler (int event, int x, int y, int flags, void* userdata) {
     vid->mouse = {x,y};
 }
 
-void Calibrar (Video& vid) {
-    int n_snaps;
+void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) {
     int snaps_capturados = 0;
     std::vector<std::vector<Point2f>> cantosTotal;
     std::vector<std::vector<Vec3f>> idxCantosTotal;
     Mat intrinsic = Mat::eye(3, 3, CV_64F);
     Mat distortions = Mat::zeros(8, 1, CV_64F);
-
-    printf ("Quantos snaps capturar? ");
-    scanf ("%d", &n_snaps);
 
     tecla = -1;
     while (vid.NextFrame () && snaps_capturados < n_snaps) {
@@ -124,10 +147,30 @@ void Calibrar (Video& vid) {
 
         calibrateCamera (idxCantosTotal, cantosTotal, vid.GetSize (), intrinsic, distortions, rot, tran, devPadInt, devPadExt, erroPorImagem);
 
-        FileStorage FSintrinsic {"intrinsic.yml", FileStorage::WRITE};
-        FileStorage FSdistortions {"distortions.yml", FileStorage::WRITE};
+        intrinsicMat = intrinsic.clone ();
+        distortionsMat = distortions.clone ();
+    }
+}
 
-        FSintrinsic << intrinsic;
-        FSdistortions << distortions;
+void Medias (const std::vector<Mat>& intrinsics, const std::vector<Mat>& distortionsVec, Mat& mediaIntr, Mat& mediaDist) {
+    mediaIntr = Mat::zeros (intrinsics[0].rows, intrinsics[0].cols, intrinsics[0].type ());
+    mediaDist = Mat::zeros (distortionsVec[0].rows, distortionsVec[0].cols, distortionsVec[0].type ());
+
+    int n_elemsVec = intrinsics.size ();
+    for (int i = 0; i < n_elemsVec; ++i) {
+
+        int n_elemsMat = intrinsics[i].rows*intrinsics[i].cols*intrinsics[i].dims;
+        for (int j = 0; j < n_elemsMat; j++) {
+            mediaIntr.begin <double> () [j] += intrinsics[i].begin <double> () [j] / n_elemsMat;
+        }
+    }
+
+    n_elemsVec = distortionsVec.size ();
+    for (int i = 0; i < n_elemsVec; ++i) {
+
+        int n_elemsMat = distortionsVec[i].rows*distortionsVec[i].cols*distortionsVec[i].dims;
+        for (int j = 0; j < n_elemsMat; j++) {
+            mediaDist.begin <double> () [j] += distortionsVec[i].begin <double> () [j] /n_elemsMat;
+        }
     }
 }
