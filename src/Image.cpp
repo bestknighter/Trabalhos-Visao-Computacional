@@ -29,3 +29,7 @@ bool Image::IsValid () {
 void Image::Clicked (int x, int y) {
     
 }
+
+cv::Mat& Image::GetImage () {
+    return image;
+}

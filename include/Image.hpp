@@ -10,6 +10,7 @@ class Image {
     cv::Vec3b at (int x, int y);
     void Show (const cv::String & winname);
     bool IsGrayscale ();
+    cv::Mat& GetImage ();
     virtual bool IsValid ();
     virtual void Clicked (int x, int y);
   protected:
