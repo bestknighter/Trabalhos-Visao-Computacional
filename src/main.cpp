@@ -123,5 +123,11 @@ void Calibrar (Video& vid) {
         Mat devPadInt, devPadExt, erroPorImagem;
 
         calibrateCamera (idxCantosTotal, cantosTotal, vid.GetSize (), intrinsic, distortions, rot, tran, devPadInt, devPadExt, erroPorImagem);
+
+        FileStorage FSintrinsic {"intrinsic.yml", FileStorage::WRITE};
+        FileStorage FSdistortions {"distortions.yml", FileStorage::WRITE};
+
+        FSintrinsic << intrinsic;
+        FSdistortions << distortions;
     }
 }
