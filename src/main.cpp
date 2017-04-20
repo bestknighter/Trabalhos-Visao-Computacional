@@ -77,8 +77,8 @@ void Calibrar (Video& vid) {
     int snaps_capturados = 0;
     std::vector<std::vector<Point2f>> cantosTotal;
     std::vector<std::vector<Vec3f>> idxCantosTotal;
-    Mat<float> instrinsic {3, 3, 1};
-    Mat<float> distortions {4, 1, 1};
+    Mat intrinsic = Mat::eye(3, 3, CV_64F);
+    Mat distortions = Mat::zeros(8, 1, CV_64F);
 
     printf ("Quantos snaps capturar? ");
     scanf ("%d", &n_snaps);
@@ -97,7 +97,7 @@ void Calibrar (Video& vid) {
                 if (cantosPorImagem.size () == BOARD_W*BOARD_H) {
                     printf ("%d de %d snapshots capturados com sucesso\n", ++snaps_capturados, n_snaps);
                     cantosTotal.push_back (cantosPorImagem);
-                    for (float i = 0; i < BOARD_W*BOARD_H; ++i) {
+                    for (int i = 0; i < BOARD_W*BOARD_H; ++i) {
                         idxCantosDetectados.emplace_back (i / BOARD_W, i % BOARD_W, 0.0);
                     }
                     idxCantosTotal.push_back (idxCantosDetectados);
@@ -119,5 +119,9 @@ void Calibrar (Video& vid) {
 
     if (snaps_capturados == n_snaps) {
 
+        std::vector<Mat> rot, tran;
+        Mat devPadInt, devPadExt, erroPorImagem;
+
+        calibrateCamera (idxCantosTotal, cantosTotal, vid.GetSize (), intrinsic, distortions, rot, tran, devPadInt, devPadExt, erroPorImagem);
     }
 }

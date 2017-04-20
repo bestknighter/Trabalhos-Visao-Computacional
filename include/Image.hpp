@@ -13,6 +13,7 @@ class Image {
     cv::Mat& GetImage ();
     virtual bool IsValid ();
     virtual void Clicked (int x, int y);
+    cv::Size GetSize ();
   protected:
     Image ();
     cv::Mat image;

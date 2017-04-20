@@ -33,3 +33,7 @@ void Image::Clicked (int x, int y) {
 cv::Mat& Image::GetImage () {
     return image;
 }
+
+cv::Size Image::GetSize () {
+    return IsValid () ? image.size () : cv::Size {0,0};
+}
