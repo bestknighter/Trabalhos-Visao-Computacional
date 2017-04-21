@@ -56,17 +56,19 @@ int main (int argc, char** argv) {
     
     // Calibra
     for (int i = 0; i < n_calibs; i++) {
-        String nomeIntr = "intrinsic";
-        String nomeDist = "distortions";
-        String ext = ".yml";
+        std::string nomeIntr = "intrinsic";
+        std::string nomeDist = "distortions";
+        std::string ext = ".xml";
         
         Calibrar (vid, intrinsicos[i], distortions[i], n_snaps);
         
-        FileStorage fsIntrin {nomeIntr + (i+1) + ext, FileStorage::WRITE};
-        FileStorage fsDistor {nomeDist + (i+1) + ext, FileStorage::WRITE};
+        nomeIntr += std::to_string (i+1) + ext;
+        nomeDist += std::to_string (i+1) + ext;
+        FileStorage fsIntrin {nomeIntr, FileStorage::WRITE};
+        FileStorage fsDistor {nomeDist, FileStorage::WRITE};
 
-        fsIntrin << intrinsicos[i];
-        fsDistor << distortions[i];
+        fsIntrin << "intrinsic_data" << intrinsicos[i];
+        fsDistor << "distortion_data" << distortions[i];
     }
 
     // Calcula e salva a media
@@ -74,11 +76,11 @@ int main (int argc, char** argv) {
         Mat mediaIntrin, mediaDistr;
         Medias (intrinsicos, distortions, mediaIntrin, mediaDistr);
 
-        FileStorage fsIntMed {"intrinsicsMedia.yml", FileStorage::WRITE};
-        FileStorage fsDisMed {"distortionsMedia.yml", FileStorage::WRITE};
+        FileStorage fsIntMed {"intrinsicsMedia.xml", FileStorage::WRITE};
+        FileStorage fsDisMed {"distortionsMedia.xml", FileStorage::WRITE};
 
-        fsIntMed << mediaIntrin;
-        fsDisMed << mediaDistr;
+        fsIntMed << "intrinsic_data" << mediaIntrin;
+        fsDisMed << "distortion_data" << mediaDistr;
     }
 
     // Exibe imagem, linha e distancia
@@ -123,7 +125,8 @@ void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) 
         if (SPACE_KEY == tecla) {
             std::vector<Point2f> cantosPorImagem;
             std::vector<Vec3f> idxCantosDetectados;
-            Mat temp = vid.GetImage ().clone ();
+            Mat temp;
+            cvtColor (vid.GetImage (), temp, CV_BGR2GRAY, 1);
             bool achou = findChessboardCorners (temp, {BOARD_W,BOARD_H}, cantosPorImagem, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
             if (achou) {
                 cornerSubPix (temp, cantosPorImagem, {11,11}, {-1,-1}, {CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1});
@@ -138,6 +141,7 @@ void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) 
                     printf ("Snapshot parcialmente oculto, tente novamente...\n");
                 }
             }
+            temp = vid.GetImage ().clone ();
             drawChessboardCorners (temp, {8,6}, {cantosPorImagem}, achou);
             namedWindow ("Previz");
             imshow ("Previz", temp);
@@ -169,18 +173,18 @@ void Medias (const std::vector<Mat>& intrinsics, const std::vector<Mat>& distort
     int n_elemsVec = intrinsics.size ();
     for (int i = 0; i < n_elemsVec; ++i) {
 
-        int n_elemsMat = intrinsics[i].rows*intrinsics[i].cols*intrinsics[i].dims;
+        int n_elemsMat = intrinsics[i].rows*intrinsics[i].cols;
         for (int j = 0; j < n_elemsMat; j++) {
-            mediaIntr.begin <double> () [j] += intrinsics[i].begin <double> () [j] / n_elemsMat;
+            mediaIntr.begin <double> () [j] += intrinsics[i].begin <double> () [j] / n_elemsVec;
         }
     }
 
     n_elemsVec = distortionsVec.size ();
     for (int i = 0; i < n_elemsVec; ++i) {
 
-        int n_elemsMat = distortionsVec[i].rows*distortionsVec[i].cols*distortionsVec[i].dims;
+        int n_elemsMat = distortionsVec[i].rows*distortionsVec[i].cols;
         for (int j = 0; j < n_elemsMat; j++) {
-            mediaDist.begin <double> () [j] += distortionsVec[i].begin <double> () [j] / n_elemsMat;
+            mediaDist.begin <double> () [j] += distortionsVec[i].begin <double> () [j] / n_elemsVec;
         }
     }
 }
