@@ -47,15 +47,14 @@ int main (int argc, char** argv) {
     printf ("Quantos snapshots capturar? ");
     scanf ("%d", &n_snaps);
 
-    std::vector<Mat> intrinsicos {n_calibs};
-    std::vector<Mat> distortions {n_calibs};
+    std::vector<Mat> intrinsicos (n_calibs);
+    std::vector<Mat> distortions (n_calibs);
 
-    FileStorage fsIntrin;
-    FileStorage fsDistor;
 
     namedWindow (JANELA_RAW, WINDOW_AUTOSIZE);
     setMouseCallback (JANELA_RAW, VideoClickHandler, &vid);
     
+    // Calibra
     for (int i = 0; i < n_calibs; i++) {
         String nomeIntr = "intrinsic";
         String nomeDist = "distortions";
@@ -63,13 +62,24 @@ int main (int argc, char** argv) {
         
         Calibrar (vid, intrinsicos[i], distortions[i], n_snaps);
         
-        fsIntrin = {nomeIntr + (i+1) + ext, FileStorage::WRITE};
-        fsDistor = {nomeDist + (i+1) + ext, FileStorage::WRITE};
+        FileStorage fsIntrin {nomeIntr + (i+1) + ext, FileStorage::WRITE};
+        FileStorage fsDistor {nomeDist + (i+1) + ext, FileStorage::WRITE};
 
         fsIntrin << intrinsicos[i];
         fsDistor << distortions[i];
     }
 
+    // Calcula e salva a media
+    {
+        Mat mediaIntrin, mediaDistr;
+        Medias (intrinsicos, distortions, mediaIntrin, mediaDistr);
+
+        FileStorage fsIntMed {"intrinsicsMedia.yml", FileStorage::WRITE};
+        FileStorage fsDisMed {"distortionsMedia.yml", FileStorage::WRITE};
+
+        fsIntMed << mediaIntrin;
+        fsDisMed << mediaDistr;
+    }
 
     // Exibe imagem, linha e distancia
     {
@@ -170,7 +180,7 @@ void Medias (const std::vector<Mat>& intrinsics, const std::vector<Mat>& distort
 
         int n_elemsMat = distortionsVec[i].rows*distortionsVec[i].cols*distortionsVec[i].dims;
         for (int j = 0; j < n_elemsMat; j++) {
-            mediaDist.begin <double> () [j] += distortionsVec[i].begin <double> () [j] /n_elemsMat;
+            mediaDist.begin <double> () [j] += distortionsVec[i].begin <double> () [j] / n_elemsMat;
         }
     }
 }
