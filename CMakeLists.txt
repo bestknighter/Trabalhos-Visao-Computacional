@@ -18,7 +18,7 @@ elseif (CMAKE_BUILD_TYPE MATCHES Release)
     message ("## Configuring RELEASE version")
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
-set (CMAKE_CXX_FLAGS_DEBUG "-pg -ggdb")
+set (CMAKE_CXX_FLAGS_DEBUG "-pg -ggdb -O0")
 
 # Setting project name and version
 project (${CURR_DIR} VERSION 1.0.0.0)
