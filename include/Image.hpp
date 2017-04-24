@@ -9,6 +9,8 @@ class Image {
     uchar color[3] = {0,0,255};
     cv::Vec3b at (int x, int y);
     void Show (const cv::String & winname);
+    void SetCaracteristics (cv::Mat& intrinsics, cv::Mat& distortions);
+    void Undistort ();
     bool IsGrayscale ();
     cv::Mat& GetImage ();
     virtual bool IsValid ();
@@ -17,6 +19,8 @@ class Image {
   protected:
     Image ();
     cv::Mat image;
+    cv::Mat intrinsic;
+    cv::Mat distortions;
     bool isGrayscale;
 };
 
