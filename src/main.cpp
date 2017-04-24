@@ -7,13 +7,14 @@
 #include "CMakeVars.hpp"
 #include "Video.hpp"
 
-#define JANELA_RAW "Imagem Raw"
-#define JANELA_CORRIGIDA "Imagem Corrigida"
+#define JANELA_FEED "Feed da Camera"
+#define JANELA_CAPTURADA "Imagem Capturada"
 
 #define ESC_KEY 27
 #define SPACE_KEY 32
+#define TOOGLE_UNDISTORT_KEY 102 // F
 
-#define BOARD_W 8
+#define BOARD_W 9
 #define BOARD_H 6
 
 using namespace cv;
@@ -51,8 +52,8 @@ int main (int argc, char** argv) {
     std::vector<Mat> distortions (n_calibs);
 
 
-    namedWindow (JANELA_RAW, WINDOW_AUTOSIZE);
-    setMouseCallback (JANELA_RAW, VideoClickHandler, &vid);
+    namedWindow (JANELA_FEED, WINDOW_AUTOSIZE);
+    setMouseCallback (JANELA_FEED, VideoClickHandler, &vid);
     
     // Calibra
     for (int i = 0; i < n_calibs; i++) {
@@ -60,6 +61,7 @@ int main (int argc, char** argv) {
         std::string nomeDist = "distortions";
         std::string ext = ".xml";
         
+        printf ("Calibracao de numero %d\n", i+1);
         Calibrar (vid, intrinsicos[i], distortions[i], n_snaps);
         
         nomeIntr += std::to_string (i+1) + ext;
@@ -72,8 +74,8 @@ int main (int argc, char** argv) {
     }
 
     // Calcula e salva a media
+    Mat mediaIntrin, mediaDistr;
     {
-        Mat mediaIntrin, mediaDistr;
         Medias (intrinsicos, distortions, mediaIntrin, mediaDistr);
 
         FileStorage fsIntMed {"intrinsicsMedia.xml", FileStorage::WRITE};
@@ -83,14 +85,21 @@ int main (int argc, char** argv) {
         fsDisMed << "distortion_data" << mediaDistr;
     }
 
+    vid.SetCaracteristics (mediaIntrin, mediaDistr);
+
     // Exibe imagem, linha e distancia
     {
+        bool showRaw = false;
         while (vid.NextFrame () && ESC_KEY != tecla) {
+            if (!showRaw) {
+                vid.Undistort ();
+            }
             vid.DrawOnImage ();
-            vid.Show (JANELA_RAW);
+            vid.Show (JANELA_FEED);
 
             tecla = waitKey(1);
-            printf("%d ", tecla);
+            showRaw = showRaw ^ (TOOGLE_UNDISTORT_KEY == tecla);
+            // printf("%d ", tecla);
         }
     }
 
@@ -100,6 +109,7 @@ int main (int argc, char** argv) {
 void Instrucoes () {
     printf (" - Pressione ESC para sair da aplicacao\n");
     printf (" - Pressione ESPACO para capturar uma snapshot\n");
+    printf (" - Depois de calibrado, pressione F para alternar entre corrigido e nao corrigido.\n";)
     system ("PAUSE");
 }
 
@@ -127,7 +137,7 @@ void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) 
             std::vector<Vec3f> idxCantosDetectados;
             Mat temp;
             cvtColor (vid.GetImage (), temp, CV_BGR2GRAY, 1);
-            bool achou = findChessboardCorners (temp, {BOARD_W,BOARD_H}, cantosPorImagem, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+            bool achou = findChessboardCorners (temp, {BOARD_W,BOARD_H}, cantosPorImagem, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE);
             if (achou) {
                 cornerSubPix (temp, cantosPorImagem, {11,11}, {-1,-1}, {CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1});
                 if (cantosPorImagem.size () == BOARD_W*BOARD_H) {
@@ -142,14 +152,14 @@ void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) 
                 }
             }
             temp = vid.GetImage ().clone ();
-            drawChessboardCorners (temp, {8,6}, {cantosPorImagem}, achou);
-            namedWindow ("Previz");
-            imshow ("Previz", temp);
+            drawChessboardCorners (temp, {BOARD_W,BOARD_H}, {cantosPorImagem}, achou);
+            namedWindow (JANELA_CAPTURADA);
+            imshow (JANELA_CAPTURADA, temp);
             waitKey (500);
-            destroyWindow ("Previz");
+            destroyWindow (JANELA_CAPTURADA);
         }
 
-        vid.Show (JANELA_RAW);
+        vid.Show (JANELA_FEED);
 
         tecla = waitKey(1);
     }
@@ -158,11 +168,11 @@ void Calibrar (Video& vid, Mat& intrinsicMat, Mat& distortionsMat, int n_snaps) 
 
         std::vector<Mat> rot, tran;
         Mat devPadInt, devPadExt, erroPorImagem;
-
+        printf ("Calibrando...\n");
         calibrateCamera (idxCantosTotal, cantosTotal, vid.GetSize (), intrinsic, distortions, rot, tran, devPadInt, devPadExt, erroPorImagem);
-
         intrinsicMat = intrinsic.clone ();
         distortionsMat = distortions.clone ();
+        printf ("Pronto!\n");
     }
 }
 
