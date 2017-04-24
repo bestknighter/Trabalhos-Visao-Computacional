@@ -109,7 +109,7 @@ int main (int argc, char** argv) {
 void Instrucoes () {
     printf (" - Pressione ESC para sair da aplicacao\n");
     printf (" - Pressione ESPACO para capturar uma snapshot\n");
-    printf (" - Depois de calibrado, pressione F para alternar entre corrigido e nao corrigido.\n";)
+    printf (" - Depois de calibrado, pressione F para alternar entre corrigido e nao corrigido.\n");
     system ("PAUSE");
 }
 
