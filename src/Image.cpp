@@ -10,7 +10,7 @@ Image::Image () {
     isGrayscale = false;
 }
 
-cv::Vec3b Image::at (int x, int y) {
+cv::Vec3b Image::at (int x, int y) const {
     return image.at<cv::Vec3b> (y, x);
 }
 
@@ -24,15 +24,15 @@ void Image::PaintPixels () {
     }
 }
 
-void Image::Show (const std::string & winname, bool showPainted) {
+void Image::Show (const std::string & winname, bool showPainted) const {
     imshow (winname, showPainted ? paintedImage : image);
 }
 
-bool Image::IsGrayscale () {
+bool Image::IsGrayscale () const {
     return isGrayscale;
 }
 
-bool Image::IsValid () {
+bool Image::IsValid () const {
     return image.data;
 }
 
@@ -47,14 +47,14 @@ void Image::Clicked (int x, int y) {
     }
 }
 
-int Image::GetCols() {
+int Image::GetCols() const {
     return image.cols;
 }
 
-int Image::GetRows() {
+int Image::GetRows() const {
     return image.rows;
 }
 
-cv::Mat Image::GetRoi(cv::Rect region) {
+cv::Mat Image::GetRoi(cv::Rect region) const {
     return image(region);
 }

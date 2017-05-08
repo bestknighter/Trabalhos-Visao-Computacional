@@ -11,15 +11,15 @@ class Image {
     bool selected;
     float margin = 0.05;
     uchar color[3] = {0,0,255};
-    cv::Vec3b at (int x, int y);
+    cv::Vec3b at (int x, int y) const;
     void PaintPixels ();
-    virtual void Show (const std::string & winname, bool showPainted = false);
-    bool IsGrayscale ();
-    virtual bool IsValid ();
+    virtual void Show (const std::string & winname, bool showPainted = false) const;
+    bool IsGrayscale () const;
+    virtual bool IsValid () const;
     void Clicked (int x, int y);
-    int GetRows();
-    int GetCols();
-    cv::Mat GetRoi (cv::Rect region);
+    int GetRows() const;
+    int GetCols() const;
+    cv::Mat GetRoi (cv::Rect region) const;
   protected:
     Image ();
     cv::Mat image;
