@@ -22,8 +22,7 @@ using namespace cv;
 
 int main(int argc, char** argv )
 {
-    if ( argc != 2 )
-    {
+    if ( argc != 2 ) {
         printf("Please give a path to a jpg image (without extension) in the ./resources/srcs/ folder\n");
         return -1;
     }
@@ -31,12 +30,23 @@ int main(int argc, char** argv )
     String filename = argv[1];
     Mat image = imread( "./resources/srcs/"+filename+".jpg", IMREAD_GRAYSCALE );
 
-    if ( !image.data )
-    {
+    if ( !image.data ) {
         printf( "No image data \n" );
         return -1;
     }
 
+    /***********************************************************************
+    *  Ground Truth
+    ***********************************************************************/
+    Mat gt = imread( "./resources/gt/"+filename+"gt.jpg", IMREAD_GRAYSCALE );
+    if ( !gt.data ) {
+        printf( "Couldn't load ground truth image \n" );
+        return -1;
+    }
+
+    /***********************************************************************
+    *  Detecting Borders
+    ***********************************************************************/
     Mat blurred;
     GaussianBlur( image, blurred, SIZE, 0, 0, BORDER_DEFAULT );
 
@@ -69,12 +79,14 @@ int main(int argc, char** argv )
     *  Thresholding
     ***********************************************************************/
     Mat thresSobel, thresCanny, thresLaplace;
-    threshold( sobel, thresSobel, BIN_THRES, 255, 1 );
-    threshold( canny, thresCanny, BIN_THRES, 255, 1 );
-    threshold( laplace, thresLaplace, BIN_THRES, 255, 1 );
-
+    threshold( sobel, thresSobel, BIN_THRES, 255, 0 );
+    threshold( canny, thresCanny, BIN_THRES, 255, 0 );
+    threshold( laplace, thresLaplace, BIN_THRES, 255, 0 );
+    
+    threshold( gt, gt, BIN_THRES, 255, 1 );
 
     imshow( "Original Image", image );
+    imshow( "Ground Truth", gt );
 
     imshow( "Sobel", sobel );
     imshow( "Thresholded Sobel", thresSobel );
