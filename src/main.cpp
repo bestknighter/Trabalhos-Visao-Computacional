@@ -3,6 +3,9 @@
 #include "opencv2/opencv.hpp"
 
 #include "CMakeVars.hpp"
+#include <cstdio>
+
+#define PREC_PIX_TYPE unsigned char
 
 // Sobel e Laplace
 #define SIZE Size(3,3)
@@ -100,6 +103,25 @@ int main(int argc, char** argv )
     imwrite( "./resources/det/" + filename + "-sobel.jpg", thresSobel );
     imwrite( "./resources/det/" + filename + "-canny.jpg", thresCanny );
     imwrite( "./resources/det/" + filename + "-laplace.jpg", thresLaplace );
+
+    int sobelHit = 0;
+    int cannyHit = 0;
+    int laplaceHit = 0;
+    for ( int j = 0; j < image.rows; ++j ) {
+        for ( int i = 0; i < image.cols; ++i ) {
+            PREC_PIX_TYPE gtPix = gt.at<PREC_PIX_TYPE>( j, i );
+            sobelHit += ( thresSobel.at<PREC_PIX_TYPE>( j, i ) == gtPix ) ? 1 : 0;
+            cannyHit += ( thresCanny.at<PREC_PIX_TYPE>( j, i ) == gtPix ) ? 1 : 0;
+            laplaceHit += ( thresLaplace.at<PREC_PIX_TYPE>( j, i ) == gtPix ) ? 1 : 0;
+        }
+    }
+
+    float numPix = image.rows * image.cols;
+    float precSobel = sobelHit/numPix;
+    float precCanny = cannyHit/numPix;
+    float precLaplace = laplaceHit/numPix;
+
+    printf ( "-- Precisao\nSobel: %f\nCanny: %f\nLaplace: %f\n", precSobel, precCanny, precLaplace );
 
     waitKey(0);
 
