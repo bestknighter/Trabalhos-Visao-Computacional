@@ -9,11 +9,11 @@
 #define DEPTH CV_16S
 #define SCALE 1
 #define DELTA 0
+#define KSIZE 3
 
 // Canny
 #define THRES 50
 #define RATIO 3
-#define KSIZE 3
 
 using namespace cv;
 
@@ -40,8 +40,8 @@ int main(int argc, char** argv )
     *  Sobel
     ***********************************************************************/
     Mat gradientX, gradientY;
-    Sobel( blurred, gradientX, DEPTH, 1, 0, 3, SCALE, DELTA, BORDER_DEFAULT );
-    Sobel( blurred, gradientY, DEPTH, 0, 1, 3, SCALE, DELTA, BORDER_DEFAULT );
+    Sobel( blurred, gradientX, DEPTH, 1, 0, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
+    Sobel( blurred, gradientY, DEPTH, 0, 1, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
     convertScaleAbs( gradientX, gradientX );
     convertScaleAbs( gradientY, gradientY );
 
@@ -54,8 +54,12 @@ int main(int argc, char** argv )
     Mat canny;
     Canny( blurred, canny, THRES, THRES*RATIO, KSIZE );
 
-
-    // Mat laplace;
+    /***********************************************************************
+    *  Laplace
+    ***********************************************************************/
+    Mat laplace;
+    Laplacian( blurred, laplace, DEPTH, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
+    convertScaleAbs( laplace, laplace );
 
 
     namedWindow( "Original Image", WINDOW_AUTOSIZE );
@@ -66,6 +70,9 @@ int main(int argc, char** argv )
 
     namedWindow( "Canny", WINDOW_AUTOSIZE );
     imshow( "Canny", canny );
+
+    namedWindow( "Laplace", WINDOW_AUTOSIZE );
+    imshow( "Laplace", laplace );
 
     waitKey(0);
 
