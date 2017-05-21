@@ -10,6 +10,11 @@
 #define SCALE 1
 #define DELTA 0
 
+// Canny
+#define THRES 50
+#define RATIO 3
+#define KSIZE 3
+
 using namespace cv;
 
 int main(int argc, char** argv )
@@ -43,6 +48,14 @@ int main(int argc, char** argv )
     Mat sobel;
     addWeighted( gradientX, 0.5, gradientY, 0.5, 0, sobel );
 
+    /***********************************************************************
+    *  Canny
+    ***********************************************************************/
+    Mat canny;
+    Canny( blurred, canny, THRES, THRES*RATIO, KSIZE );
+
+
+    // Mat laplace;
 
 
     namedWindow( "Original Image", WINDOW_AUTOSIZE );
@@ -50,6 +63,9 @@ int main(int argc, char** argv )
 
     namedWindow( "Sobel", WINDOW_AUTOSIZE );
     imshow( "Sobel", sobel );
+
+    namedWindow( "Canny", WINDOW_AUTOSIZE );
+    imshow( "Canny", canny );
 
     waitKey(0);
 
