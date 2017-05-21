@@ -7,16 +7,24 @@
 
 #define PREC_PIX_TYPE unsigned char
 
-// Sobel e Laplace
-#define SIZE Size(3,3)
-#define DEPTH CV_16S
-#define SCALE 1
-#define DELTA 0
-#define KSIZE 3
+// Sobel
+#define S_SIZE Size(3,3)
+#define S_DEPTH CV_16S
+#define S_SCALE 1
+#define S_DELTA 0
+#define S_KSIZE 3
 
 // Canny
-#define THRES 50
-#define RATIO 3
+#define C_THRES 30
+#define C_RATIO 3
+#define C_KSIZE 3
+
+// Laplace
+#define L_SIZE Size(3,3)
+#define L_DEPTH CV_16S
+#define L_SCALE 1
+#define L_DELTA 0
+#define L_KSIZE 3
 
 // Threshold
 #define BIN_THRES 60
@@ -51,14 +59,14 @@ int main(int argc, char** argv )
     *  Detecting Borders
     ***********************************************************************/
     Mat blurred;
-    GaussianBlur( image, blurred, SIZE, 0, 0, BORDER_DEFAULT );
+    GaussianBlur( image, blurred, S_SIZE, 0, 0, BORDER_DEFAULT );
 
     /***********************************************************************
     *  Sobel
     ***********************************************************************/
     Mat gradientX, gradientY;
-    Sobel( blurred, gradientX, DEPTH, 1, 0, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
-    Sobel( blurred, gradientY, DEPTH, 0, 1, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
+    Sobel( blurred, gradientX, S_DEPTH, 1, 0, S_KSIZE, S_SCALE, S_DELTA, BORDER_DEFAULT );
+    Sobel( blurred, gradientY, S_DEPTH, 0, 1, S_KSIZE, S_SCALE, S_DELTA, BORDER_DEFAULT );
     convertScaleAbs( gradientX, gradientX );
     convertScaleAbs( gradientY, gradientY );
 
@@ -69,13 +77,13 @@ int main(int argc, char** argv )
     *  Canny
     ***********************************************************************/
     Mat canny;
-    Canny( blurred, canny, THRES, THRES*RATIO, KSIZE );
+    Canny( blurred, canny, C_THRES, C_THRES*C_RATIO, C_KSIZE );
 
     /***********************************************************************
     *  Laplace
     ***********************************************************************/
     Mat laplace;
-    Laplacian( blurred, laplace, DEPTH, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
+    Laplacian( blurred, laplace, L_DEPTH, L_KSIZE, L_SCALE, L_DELTA, BORDER_DEFAULT );
     convertScaleAbs( laplace, laplace );
 
     /***********************************************************************
