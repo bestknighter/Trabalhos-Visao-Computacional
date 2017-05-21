@@ -3,7 +3,6 @@
 #include "opencv2/opencv.hpp"
 
 #include "CMakeVars.hpp"
-#include "Image.hpp"
 
 using namespace cv;
 
@@ -15,15 +14,18 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    Image image( argv[1] );
+    Mat image = imread( argv[1], IMREAD_GRAYSCALE );
 
-    if ( !image.IsValid() )
+    if ( !image.data )
     {
         printf( "No image data \n" );
         return -1;
     }
-    namedWindow( "Display Image", WINDOW_AUTOSIZE );
-    image.Show( "Display Image" );
+
+
+
+    namedWindow( "Original Image", WINDOW_AUTOSIZE );
+    imshow( "Original Image", image );
 
     waitKey(0);
 
