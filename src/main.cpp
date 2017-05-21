@@ -24,11 +24,12 @@ int main(int argc, char** argv )
 {
     if ( argc != 2 )
     {
-        printf("usage: cv_test <Image_Path>\n");
+        printf("Please give a path to a jpg image (without extension) in the ./resources/srcs/ folder\n");
         return -1;
     }
 
-    Mat image = imread( argv[1], IMREAD_GRAYSCALE );
+    String filename = argv[1];
+    Mat image = imread( "./resources/srcs/"+filename+".jpg", IMREAD_GRAYSCALE );
 
     if ( !image.data )
     {
@@ -83,6 +84,10 @@ int main(int argc, char** argv )
 
     imshow( "Laplace", laplace );
     imshow( "Thresholded Laplace", thresLaplace );
+
+    imwrite( "./resources/det/" + filename + "-sobel.jpg", thresSobel );
+    imwrite( "./resources/det/" + filename + "-canny.jpg", thresCanny );
+    imwrite( "./resources/det/" + filename + "-laplace.jpg", thresLaplace );
 
     waitKey(0);
 
