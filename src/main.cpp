@@ -4,7 +4,7 @@
 
 #include "CMakeVars.hpp"
 
-// Sobel
+// Sobel e Laplace
 #define SIZE Size(3,3)
 #define DEPTH CV_16S
 #define SCALE 1
@@ -14,6 +14,9 @@
 // Canny
 #define THRES 50
 #define RATIO 3
+
+// Threshold
+#define BIN_THRES 60
 
 using namespace cv;
 
@@ -61,18 +64,26 @@ int main(int argc, char** argv )
     Laplacian( blurred, laplace, DEPTH, KSIZE, SCALE, DELTA, BORDER_DEFAULT );
     convertScaleAbs( laplace, laplace );
 
+    /***********************************************************************
+    *  Thresholding
+    ***********************************************************************/
+    Mat thresSobel, thresCanny, thresLaplace;
+    threshold( sobel, thresSobel, BIN_THRES, 255, 1 );
+    threshold( canny, thresCanny, BIN_THRES, 255, 1 );
+    threshold( laplace, thresLaplace, BIN_THRES, 255, 1 );
+
 
     namedWindow( "Original Image", WINDOW_AUTOSIZE );
     imshow( "Original Image", image );
 
-    namedWindow( "Sobel", WINDOW_AUTOSIZE );
-    imshow( "Sobel", sobel );
+    namedWindow( "Thresholded Sobel", WINDOW_AUTOSIZE );
+    imshow( "Thresholded Sobel", thresSobel );
 
-    namedWindow( "Canny", WINDOW_AUTOSIZE );
-    imshow( "Canny", canny );
+    namedWindow( "Thresholded Canny", WINDOW_AUTOSIZE );
+    imshow( "Thresholded Canny", thresCanny );
 
-    namedWindow( "Laplace", WINDOW_AUTOSIZE );
-    imshow( "Laplace", laplace );
+    namedWindow( "Thresholded Laplace", WINDOW_AUTOSIZE );
+    imshow( "Thresholded Laplace", thresLaplace );
 
     waitKey(0);
 
