@@ -4,6 +4,12 @@
 
 #include "CMakeVars.hpp"
 
+// Sobel
+#define SIZE Size(3,3)
+#define DEPTH CV_16S
+#define SCALE 1
+#define DELTA 0
+
 using namespace cv;
 
 int main(int argc, char** argv )
@@ -22,10 +28,28 @@ int main(int argc, char** argv )
         return -1;
     }
 
+    Mat blurred;
+    GaussianBlur( image, blurred, SIZE, 0, 0, BORDER_DEFAULT );
+
+    /***********************************************************************
+    *  Sobel
+    ***********************************************************************/
+    Mat gradientX, gradientY;
+    Sobel( blurred, gradientX, DEPTH, 1, 0, 3, SCALE, DELTA, BORDER_DEFAULT );
+    Sobel( blurred, gradientY, DEPTH, 0, 1, 3, SCALE, DELTA, BORDER_DEFAULT );
+    convertScaleAbs( gradientX, gradientX );
+    convertScaleAbs( gradientY, gradientY );
+
+    Mat sobel;
+    addWeighted( gradientX, 0.5, gradientY, 0.5, 0, sobel );
+
 
 
     namedWindow( "Original Image", WINDOW_AUTOSIZE );
     imshow( "Original Image", image );
+
+    namedWindow( "Sobel", WINDOW_AUTOSIZE );
+    imshow( "Sobel", sobel );
 
     waitKey(0);
 
