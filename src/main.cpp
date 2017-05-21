@@ -73,16 +73,15 @@ int main(int argc, char** argv )
     threshold( laplace, thresLaplace, BIN_THRES, 255, 1 );
 
 
-    namedWindow( "Original Image", WINDOW_AUTOSIZE );
     imshow( "Original Image", image );
 
-    namedWindow( "Thresholded Sobel", WINDOW_AUTOSIZE );
+    imshow( "Sobel", sobel );
     imshow( "Thresholded Sobel", thresSobel );
 
-    namedWindow( "Thresholded Canny", WINDOW_AUTOSIZE );
+    imshow( "Canny", canny );
     imshow( "Thresholded Canny", thresCanny );
 
-    namedWindow( "Thresholded Laplace", WINDOW_AUTOSIZE );
+    imshow( "Laplace", laplace );
     imshow( "Thresholded Laplace", thresLaplace );
 
     waitKey(0);
