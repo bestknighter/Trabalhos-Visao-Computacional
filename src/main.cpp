@@ -1,9 +1,8 @@
-#include <stdio.h>
+#include <cstdio>
 
 #include "opencv2/opencv.hpp"
 
 #include "CMakeVars.hpp"
-#include <cstdio>
 
 #define PREC_PIX_TYPE unsigned char
 
