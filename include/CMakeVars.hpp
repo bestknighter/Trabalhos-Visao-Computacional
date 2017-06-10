@@ -5,6 +5,6 @@
 #define PROJECT_VERSION_MINOR 0
 #define PROJECT_VERSION_PATCH 0
 #define PROJECT_VERSION_TWEAK 0
-#define DEBUG 0
+#define DEBUG 1
 
 #endif //_CMAKEVARS_HPP_
