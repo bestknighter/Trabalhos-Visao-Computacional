@@ -58,13 +58,25 @@ int main(int argc, char** argv )
     imshow("Surf", grayscaleImageSURF);
 
     
-    // TODO daqui em diante (abaixo foi so crtl+c crtl+v)
-    SurfDescriptorExtractor surfDesc; // Construction of the SURF descriptor extractor
-    Mat descriptors1; // Extraction of the SURF descriptors
-    surfDesc.compute(image1,keypoints1,descriptors1);
-    BruteForceMatcher<cv::L2<float>> matcher; // Construction of the matcher
+    // Descriptor
+    Mat surfDescriptorsOriginal; // Extraction of the SURF descriptors
+    surf->compute(grayscaleImageSURF, keypoints, surfDescriptorsOriginal);
+
+
+    // Matcher
+    Ptr<BFMatcher> matcher = BFMatcher::create(); // Construction of the matcher
     std::vector<DMatch> matches; // Match the two image descriptors
-    matcher.match(descriptors1, descriptors2, matches);
+    // matcher->match(descriptorsOther, surfDescriptorsOriginal, matches);
+
+    
+    std::nth_element(matches.begin(), matches.begin()+24, matches.end());
+    matches.erase(matches.begin()+25, matches.end()); // remove all elements after the 25th
+    // Mat imageMatches;
+    // drawMatches(grayscaleImageSURF, keypoints, imageOther, keypointsOther, matches, imageMatches, Scalar(255,255,255));
+
+    // waitKey(0);
+    // namedWindow("Matches", WINDOW_AUTOSIZE );
+    // imshow("Matches", imageMatches);
 
     waitKey(0);
 
