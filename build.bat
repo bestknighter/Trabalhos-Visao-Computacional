@@ -30,8 +30,6 @@ cmake ../.. -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 mingw32-make
 cd ../..
 robocopy "./resources" "%endPath%/resources" /xn /xo /ns /nc /njs /nfl /ndl /s /e
-robocopy "./win-DLLs" "%endPath%" /xn /xo /ns /nc /njs /nfl /ndl /s /e
-cd %startPath%
 goto :EOF
 
 :build_debug
@@ -45,8 +43,6 @@ cmake ../.. -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
 mingw32-make
 cd ../..
 robocopy "./resources" "%endPath%/resources" /xo /xn /ns /nc /njs /nfl /ndl /s /e
-robocopy "./win-DLLs" "%endPath%" /xo /xn /ns /nc /njs /nfl /ndl /s /e
-cd %startPath%
 goto :EOF
 
 :End
