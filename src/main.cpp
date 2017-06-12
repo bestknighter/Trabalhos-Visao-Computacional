@@ -9,76 +9,129 @@
 
 using namespace cv;
 
+Mat image;
+Mat grabbedFrame;
+Mat seekFrame;
+
+Mat SURFdescriptorGrabbed;
+Mat SURFdescriptorSeek;
+
+Mat grabbedHarrisDrawReference;
+Mat grabbedHarrisDrawNew;
+Mat grabbedSURFDrawReference;
+Mat grabbedSURFDrawNew;
+
+std::vector<KeyPoint> keypointsReference;
+std::vector<KeyPoint> keypointsNew;
+
+bool referenceFrameIsGrabbed = false;
+bool seekFrameIsGrabbed = false;
+
 int main(int argc, char** argv )
 {
     if ( argc != 2 )
     {
-        printf("usage: Projeto.exe <Image_Path>\n");
+        printf("usage: Projeto.exe <cam index>\n");
         return -1;
     }
+    
+    VideoCapture cap;
 
-    Mat image;
-    image = imread( argv[1], IMREAD_COLOR );
+    cap.open(std::atoi(argv[1]));
 
-    if ( !image.data )
-    {
-        printf("No image data \n");
-        return -1;
+    if (!cap.isOpened()) {
+        printf("Couldn't open camera");
     }
 
-    namedWindow("Display Image", WINDOW_AUTOSIZE );
-    imshow("Display Image", image);
+    int key = 0;
+    do {
 
+        cap.read(image);
 
-    Mat grayscaleImageHarris;
-    cvtColor(image, grayscaleImageHarris, CV_BGR2GRAY);
-    Mat grayscaleImageSURF = grayscaleImageHarris.clone();
+        if ( !image.data )
+        {
+            printf("No image data \n");
+            return -1;
+        }
 
-    HarrisDetector harris; // Create Harris detector instance
-    harris.detect(grayscaleImageHarris); // Compute Harris values
-    std::vector<cv::Point> pts; // Detect Harris corners
-    harris.getCorners(pts, 0.01);
-    harris.drawOnImage(grayscaleImageHarris, pts); // Draw Harris corners
+        imshow("Cam Feed", image);
 
-    waitKey(0);
-    namedWindow("Harris", WINDOW_AUTOSIZE );
-    imshow("Harris", grayscaleImageHarris);
+        if (103 == key) { // g
+            cvtColor(image, grabbedFrame, CV_BGR2GRAY);
+            referenceFrameIsGrabbed = true;
 
+            // Harris
+            HarrisDetector harris; // Create Harris detector instance
+            harris.detect(grabbedFrame); // Compute Harris values
+            std::vector<Point> pts; // Detect Harris corners
+            harris.getCorners(pts, 0.01);
 
+            grabbedHarrisDrawReference = image.clone();
+            harris.drawOnImage(grabbedHarrisDrawReference, pts); // Draw Harris corners
 
-    std::vector<KeyPoint> keypoints; // vector of keypoints
-    Ptr<xfeatures2d::SURF> surf = xfeatures2d::SURF::create(2500.); // Construct the SURF feature detector object
-    surf->detect(grayscaleImageSURF, keypoints); // Detect the SURF features
+            namedWindow("Harris Reference", WINDOW_AUTOSIZE );
+            imshow("Harris Reference", grabbedHarrisDrawReference);
 
-    // Draw the keypoints with scale and orientation information
-    drawKeypoints(grayscaleImageSURF, keypoints, grayscaleImageSURF, Scalar(255,255,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+            // SURF
+            Ptr<xfeatures2d::SURF> surf = xfeatures2d::SURF::create(2500.); // Construct the SURF feature detector object
+            surf->detect(grabbedFrame, keypointsReference); // Detect the SURF features
+            surf->compute(grabbedFrame, keypointsReference, SURFdescriptorGrabbed); // Compute the SURF Descriptor
 
-    waitKey(0);
-    namedWindow("Surf", WINDOW_AUTOSIZE );
-    imshow("Surf", grayscaleImageSURF);
+            // Draw the keypoints with scale and orientation information
+            grabbedSURFDrawReference = image.clone();
+            drawKeypoints(grabbedFrame, keypointsReference, grabbedSURFDrawReference, Scalar(255,255,255), DrawMatchesFlags::DRAW_OVER_OUTIMG | DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-    
-    // Descriptor
-    Mat surfDescriptorsOriginal; // Extraction of the SURF descriptors
-    surf->compute(grayscaleImageSURF, keypoints, surfDescriptorsOriginal);
+            namedWindow("Surf Reference", WINDOW_AUTOSIZE );
+            imshow("Surf Reference", grabbedSURFDrawReference);
+        }
 
+        if (referenceFrameIsGrabbed) {
+            cvtColor(image, seekFrame, CV_BGR2GRAY);
+            seekFrameIsGrabbed = true;
+            
+            // Harris
+            HarrisDetector harris; // Create Harris detector instance
+            harris.detect(seekFrame); // Compute Harris values
+            std::vector<Point> pts; // Detect Harris corners
+            harris.getCorners(pts, 0.01);
 
-    // Matcher
-    Ptr<BFMatcher> matcher = BFMatcher::create(); // Construction of the matcher
-    std::vector<DMatch> matches; // Match the two image descriptors
-    // matcher->match(descriptorsOther, surfDescriptorsOriginal, matches);
+            grabbedHarrisDrawNew = image.clone();
+            harris.drawOnImage(grabbedHarrisDrawNew, pts); // Draw Harris corners
 
-    
-    std::nth_element(matches.begin(), matches.begin()+24, matches.end());
-    matches.erase(matches.begin()+25, matches.end()); // remove all elements after the 25th
-    // Mat imageMatches;
-    // drawMatches(grayscaleImageSURF, keypoints, imageOther, keypointsOther, matches, imageMatches, Scalar(255,255,255));
+            namedWindow("Harris New", WINDOW_AUTOSIZE );
+            imshow("Harris New", grabbedHarrisDrawNew);
+            
+            // SURF
+            Ptr<xfeatures2d::SURF> surf = xfeatures2d::SURF::create(2500.); // Construct the SURF feature detector object
+            surf->detect(seekFrame, keypointsNew); // Detect the SURF features
+            surf->compute(seekFrame, keypointsNew, SURFdescriptorSeek); // Compute the SURF Descriptor
 
-    // waitKey(0);
-    // namedWindow("Matches", WINDOW_AUTOSIZE );
-    // imshow("Matches", imageMatches);
+            // Draw the keypoints with scale and orientation information
+            grabbedSURFDrawNew = image.clone();
+            drawKeypoints(seekFrame, keypointsNew, grabbedSURFDrawNew, Scalar(255,255,255), DrawMatchesFlags::DRAW_OVER_OUTIMG | DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-    waitKey(0);
+            namedWindow("Surf New", WINDOW_AUTOSIZE );
+            imshow("Surf New", grabbedSURFDrawNew);
+
+            // Matcher
+            Ptr<BFMatcher> matcher = BFMatcher::create(); // Construction of the matcher
+            std::vector<DMatch> matches; // Match the two image descriptors
+            matcher->match(SURFdescriptorGrabbed, SURFdescriptorSeek, matches);
+
+            std::nth_element(matches.begin(), matches.begin()+24, matches.end());
+            matches.erase(matches.begin()+25, matches.end()); // remove all elements after the 25th
+            Mat imageMatches;
+            drawMatches(grabbedSURFDrawReference, keypointsReference, grabbedSURFDrawNew, keypointsNew, matches, imageMatches, Scalar(255,255,255));
+
+            namedWindow("Matches", WINDOW_AUTOSIZE );
+            imshow("Matches", imageMatches);
+        }
+
+        key = waitKey(1);
+        if (key != 255) {
+            printf("pressed: %d\n", key);
+        }
+    } while(27 != key); // ESC
 
     return 0;
 }

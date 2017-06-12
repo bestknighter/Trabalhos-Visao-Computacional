@@ -26,6 +26,9 @@ cd ./build
 mkdir release
 cd ./release
 set endPath=%cd%
+IF EXIST "Makefile" (
+    del "Makefile"
+)
 cmake ../.. -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 mingw32-make
 cd ../..
@@ -39,6 +42,9 @@ cd ./build
 mkdir debug
 cd ./debug
 set endPath=%cd%
+IF EXIST "Makefile" (
+    del "Makefile"
+)
 cmake ../.. -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
 mingw32-make
 cd ../..
