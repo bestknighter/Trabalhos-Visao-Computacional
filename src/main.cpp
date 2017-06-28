@@ -47,7 +47,7 @@ int main(int argc, char** argv ) {
 			continue;
 		}
 
-		Mat bgSubtracted1, bgSubtracted2, flow;
+		Mat bgSubtracted1, bgSubtracted2, flow = Mat::zeros(currentFrame.rows, currentFrame.cols, CV_64FC2);
 		// mog->apply(currentFrame, bgSubtracted1);
 		// mog2->apply(currentFrame, bgSubtracted2);
 
@@ -57,28 +57,35 @@ int main(int argc, char** argv ) {
 		fof->calc(i0, i1, flow);
 		Mat convertedFlow = Mat::zeros(currentFrame.rows, currentFrame.cols, CV_8UC1);
 
-		Mat bgFlow = currentFrame.clone();
+		// Mat bgFlow = currentFrame.clone();
 		for(int j = 0; j < currentFrame.rows; j += FLOW_GRID_SIZE) {
 			for(int i = 0; i < currentFrame.cols; i += FLOW_GRID_SIZE) {
 				Point2f thisFlow = flow.at<Point2f>(j,i);
 
 				convertedFlow.at<unsigned char>(j,i) = 255*(std::sqrt( std::pow(thisFlow.x, 2) + std::pow(thisFlow.y, 2) )/sqrt2);
 
-				// Colorido por eixo
-				int B = 255*(thisFlow.x >= 0 ? thisFlow.x : -thisFlow.x );
-				int R = 255*(thisFlow.y >= 0 ? thisFlow.y : -thisFlow.y );
-				// Linhas
-				line( bgFlow, Point(i,j), Point(cvRound(i+thisFlow.x*LINE_STRETCHER), cvRound(j+thisFlow.y*LINE_STRETCHER)), Scalar(B,0,R) );
+				// // Colorido por eixo
+				// int B = 255*(thisFlow.x >= 0 ? thisFlow.x : -thisFlow.x );
+				// int R = 255*(thisFlow.y >= 0 ? thisFlow.y : -thisFlow.y );
+				// // Linhas
+				// line( bgFlow, Point(i,j), Point(cvRound(i+thisFlow.x*LINE_STRETCHER), cvRound(j+thisFlow.y*LINE_STRETCHER)), Scalar(B,0,R) );
 			}
 		}
 
 		Mat filteredFlow;
 		double estimatedVariance = WienerFilter(convertedFlow, filteredFlow);
+		
+		Mat hist;
+		int channels[] = {0};
+		int histSize[] = {255};
+		float intRange[] = {0,255};
+		float* ranges[] = {intRange};
+		calcHist(&filteredFlow, 1, channels, Mat(), hist, 1, histSize, (const float**)ranges, true, false);
 
 		imshow("Original Video (current frame)", currentFrame);
 		// imshow("BG Subtracted (MOG)", bgSubtracted1);
 		// imshow("BG Subtracted (MOG2)", bgSubtracted2);
-		imshow("Optical Flow (Farneback)", bgFlow);
+		// imshow("Optical Flow (Farneback)", bgFlow);
 		imshow("Optical Flow (Unfiltered)", convertedFlow);
 		imshow("Optical Flow (Filtered)", filteredFlow);
 		
